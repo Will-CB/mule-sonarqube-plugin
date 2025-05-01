@@ -10,7 +10,7 @@ pool:
   vmImage: ubuntu-latest
 
 steps:
-- task: Maven@3
+- task: Maven@4
   inputs:
     mavenPomFile: 'pom.xml'
     mavenOptions: '-Xmx3072m -Dlanguage=mule'
@@ -20,3 +20,16 @@ steps:
     publishJUnitResults: true
     testResultsFiles: '**/surefire-reports/TEST-*.xml'
     goals: 'package sonar-packaging:sonar-plugin'
+
+- task: CopyFiles@2 # Use this task to copy files from a source folder to a target folder using match patterns.
+  inputs:
+    Contents: '**/*.jar' #The file paths to include as part of the copy.
+    TargetFolder: '$(Build.ArtifactStagingDirectory)' # The target folder or UNC path that will contain the copied files.
+    CleanTargetFolder: true # Deletes all existing files in the target folder before the copy process.
+
+- task: PublishBuildArtifacts@1 # Use this task in a build pipeline to publish build artifacts to Azure Pipelines, TFS, or a file share.
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)' # Specifies the folder or file path to publish.
+    ArtifactName: '$(Build.Repository.Name)' # Specifies the name of the artifact to create in the publish location.
+    publishLocation: 'Container' # Store the artifact in Azure Pipelines (Container)
+  displayName: Publish Artifact For Dev
